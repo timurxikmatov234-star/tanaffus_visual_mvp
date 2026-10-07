@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#eff6ff">
+<title>Tanaffus — школьная столовая</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{ink:'#102d52',brand:'#1672f9',pale:'#eef6ff'},boxShadow:{panel:'0 8px 28px rgba(24,65,115,.07)'}}}};
+</script>
+<style>
+*{box-sizing:border-box}body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.food-img{transition:transform .35s ease}.food-card:hover .food-img{transform:scale(1.04)}
+.nav-active{background:#1672f9!important;color:white!important}
+.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{scrollbar-width:none}
+.toast{animation:pop .2s ease-out}@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body class="bg-[#f3f8ff] text-ink">
+<div class="min-h-screen">
+  <div class="flex min-h-screen">
+    <aside class="hidden w-64 shrink-0 flex-col border-r border-blue-100 bg-white/90 px-4 py-5 lg:flex">
+      <button onclick="showPage('menu')" class="flex items-center gap-3 px-2 text-left">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-brand text-2xl text-white">♨</span>
+        <span><b class="block text-xl font-extrabold">Tanaffus</b><small class="text-slate-500" data-t="subtitle">Школьная столовая</small></span>
+      </button>
+      <nav class="mt-8 space-y-2">
+        <button data-page="menu" onclick="showPage('menu')" class="side-link nav-active flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold"><span>⌂</span><span data-t="home">Главная</span></button>
+        <button data-page="menu" onclick="showPage('menu')" class="side-link flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50"><span>♜</span><span data-t="menu">Меню</span></button>
+        <button data-page="orders" onclick="showPage('orders')" class="side-link flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50"><span>🛒</span><span data-t="myOrders">Мои заказы</span><span id="orderCount" class="ml-auto rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">0</span></button>
+        <button data-page="history" onclick="showPage('history')" class="side-link flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50"><span>◷</span><span data-t="history">История заказов</span></button>
+        <button data-page="admin" onclick="showPage('admin')" class="side-link flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50"><span>♙</span><span data-t="cafeteria">Кабинет столовой</span></button>
+        <button data-page="stats" onclick="showPage('stats')" class="side-link flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50"><span>▥</span><span data-t="stats">Статистика</span></button>
+      </nav>
+      <div class="mt-auto rounded-2xl bg-blue-50 p-4">
+        <div class="text-3xl">🥗</div><p class="mt-2 font-bold" data-t="sidebarTitle">Вкусная еда — для успешной учёбы!</p>
+        <p class="mt-1 text-xs leading-5 text-slate-500" data-t="sidebarText">Здоровое питание — залог энергии и хорошего настроения.</p>
+      </div>
+      <div class="px-2 pt-5 text-xs leading-5 text-slate-400">Tanaffus © 2026<br><span data-t="subtitle">Школьная столовая</span></div>
+    </aside>
+
+    <main class="min-w-0 flex-1">
+      <header class="sticky top-0 z-30 border-b border-blue-100 bg-white/90 backdrop-blur">
+        <div class="flex items-center gap-3 px-4 py-3 sm:px-6 xl:px-7">
+          <button class="grid h-10 w-10 place-items-center rounded-xl bg-brand text-xl text-white lg:hidden" onclick="toggleMobile()">☰</button>
+          <div class="relative min-w-0 flex-1">
+            <span class="absolute left-3 top-2.5 text-lg text-slate-400">⌕</span>
+            <input id="search" oninput="renderMenu()" class="w-full max-w-xl rounded-xl border border-blue-100 bg-slate-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-blue-400 focus:bg-white" placeholder="Поиск блюд..." data-ph="search">
+          </div>
+          <div class="flex items-center rounded-full bg-slate-100 p-1 text-xs font-bold">
+            <button onclick="setLang('ru')" id="ruBtn" class="rounded-full bg-brand px-4 py-2 text-white">RU</button>
+            <button onclick="setLang('uz')" id="uzBtn" class="rounded-full px-4 py-2 text-slate-600">UZ</button>
+          </div>
+          <button onclick="toast(tr('notifications'))" class="relative hidden h-10 w-10 place-items-center rounded-full hover:bg-blue-50 sm:grid" aria-label="Уведомления">♧<span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500"></span></button>
+          <button onclick="showPage('orders')" class="flex items-center gap-2 rounded-full p-1.5 hover:bg-blue-50">
+            <span class="grid h-9 w-9 place-items-center rounded-full bg-blue-100 text-lg">👩🏻</span>
+            <span class="hidden text-left sm:block"><b class="block text-xs">Алина Иванова</b><small class="text-slate-500">9 <span data-t="grade">класс</span></small></span>
+          </button>
+        </div>
+        <div id="mobileNav" class="hidden border-t border-blue-100 px-3 py-2 lg:hidden">
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="showPage('menu')" class="rounded-lg bg-blue-50 px-2 py-2 text-xs font-semibold" data-t="menu">Меню</button>
+            <button onclick="showPage('orders')" class="rounded-lg px-2 py-2 text-xs font-semibold" data-t="myOrders">Мои заказы</button>
+            <button onclick="showPage('admin')" class="rounded-lg px-2 py-2 text-xs font-semibold" data-t="cafeteria">Столовая</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="grid grid-cols-1 gap-5 p-4 sm:p-6 xl:grid-cols-[minmax(0,1fr)_280px] xl:p-7">
+        <div class="min-w-0">
+          <section id="page-menu" class="page">
+            <div class="relative h-44 overflow-hidden rounded-2xl bg-ink sm:h-52">
+              <img src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1500&q=85" alt="Аппетитный обед" class="absolute inset-0 h-full w-full object-cover">
+              <div class="absolute inset-0 bg-gradient-to-r from-[#082448]/95 via-[#082448]/75 to-transparent"></div>
+              <div class="relative z-10 flex h-full max-w-xl flex-col justify-center px-6 text-white sm:px-8">
+                <h1 class="text-2xl font-black leading-tight sm:text-4xl" data-t="hero">Вкусный обед —<br>всегда рядом!</h1>
+                <p class="mt-3 max-w-md text-xs leading-5 text-blue-100 sm:text-sm" data-t="heroText">Выбирай любимые блюда, заказывай заранее и экономь время в столовой.</p>
+              </div>
+              <div class="absolute bottom-4 right-4 hidden rounded-xl border border-white/40 bg-white/95 px-4 py-3 text-ink shadow-lg sm:block">
+                <p class="text-xs text-slate-500" data-t="today">Сегодня</p><p class="mt-1 text-sm font-bold">◷ <span data-t="hours">Время работы столовой</span></p><p class="text-xs text-slate-500">08:00 — 16:00</p>
+              </div>
+            </div>
+            <div class="mt-6 flex flex-wrap items-end justify-between gap-3">
+              <div><h2 class="text-2xl font-black sm:text-3xl" data-t="todayMenu">Меню на сегодня</h2><p class="mt-1 text-sm text-slate-500" data-t="menuSub">Свежие блюда на каждый день</p></div>
+              <span class="rounded-full border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-slate-500">▦ 1 <span data-t="october">октября</span></span>
+            </div>
+            <div id="filters" class="no-scrollbar mt-4 flex gap-2 overflow-x-auto pb-1">
+              <button onclick="setCategory('all')" data-cat="all" class="filter-btn rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-white">▦ <span data-t="all">Все</span></button>
+              <button onclick="setCategory('food')" data-cat="food" class="filter-btn whitespace-nowrap rounded-full border border-blue-100 bg-white px-4 py-2.5 text-sm font-semibold">♨ <span data-t="food">Основные блюда</span></button>
+              <button onclick="setCategory('soup')" data-cat="soup" class="filter-btn whitespace-nowrap rounded-full border border-blue-100 bg-white px-4 py-2.5 text-sm font-semibold">🥣 <span data-t="soups">Супы</span></button>
+              <button onclick="setCategory('side')" data-cat="side" class="filter-btn whitespace-nowrap rounded-full border border-blue-100 bg-white px-4 py-2.5 text-sm font-semibold">🍚 <span data-t="sides">Гарниры</span></button>
+              <button onclick="setCategory('salad')" data-cat="salad" class="filter-btn whitespace-nowrap rounded-full border border-blue-100 bg-white px-4 py-2.5 text-sm font-semibold">🥗 <span data-t="salads">Салаты</span></button>
+              <button onclick="setCategory('drink')" data-cat="drink" class="filter-btn whitespace-nowrap rounded-full border border-blue-100 bg-white px-4 py-2.5 text-sm font-semibold">🥤 <span data-t="drinks">Напитки</span></button>
+              <button onclick="setCategory('dessert')" data-cat="dessert" class="filter-btn whitespace-nowrap rounded-full border border-blue-100 bg-white px-4 py-2.5 text-sm font-semibold">🍰 <span data-t="desserts">Десерты</span></button>
+            </div>
+            <div id="menuGrid" class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 2xl:grid-cols-4"></div>
+            <p class="mt-4 text-xs text-slate-400" data-t="demoNote">Демонстрационные цены. Фото загружаются из интернета.</p>
+          </section>
+
+          <section id="page-orders" class="page hidden">
+            <h1 class="text-3xl font-black" data-t="myOrders">Мои заказы</h1><p class="mt-2 text-slate-500" data-t="ordersDesc">Следите за готовностью заказа.</p><div id="ordersList" class="mt-5 space-y-3"></div>
+          </section>
+          <section id="page-history" class="page hidden">
+            <h1 class="text-3xl font-black" data-t="history">История заказов</h1><p class="mt-2 text-slate-500" data-t="historyDesc">Все оформленные заказы в этом браузере.</p><div id="historyList" class="mt-5 space-y-3"></div>
+          </section>
+          <section id="page-admin" class="page hidden">
+            <h1 class="text-3xl font-black" data-t="cafeteria">Кабинет столовой</h1><p class="mt-2 text-slate-500" data-t="adminDesc">Управляйте заказами и готовностью.</p><div id="adminStats" class="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4"></div><div id="adminList" class="mt-5 space-y-3"></div>
+          </section>
+          <section id="page-stats" class="page hidden">
+            <h1 class="text-3xl font-black" data-t="stats">Статистика</h1><p class="mt-2 text-slate-500" data-t="statsDesc">Спрос на блюда по оформленным заказам.</p><div id="statsContent" class="mt-5 rounded-2xl bg-white p-5 shadow-panel"></div>
+          </section>
+        </div>
+
+        <aside class="hidden xl:block">
+          <div class="sticky top-24 space-y-4">
+            <section class="rounded-2xl border border-blue-100 bg-white p-4 shadow-panel">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-4"><h2 class="font-extrabold">🛒 <span data-t="myOrder">Мой заказ</span></h2><span id="cartCount" class="rounded-full bg-brand px-2.5 py-1 text-xs font-bold text-white">0</span></div>
+              <div id="cartPanel" class="mt-3 space-y-4"></div>
+              <div class="mt-4 border-t border-slate-100 pt-4">
+                <div class="flex justify-between text-sm"><span data-t="total">Общая сумма</span><b id="cartTotal">0 сум</b></div>
+                <button onclick="openCheckout()" class="mt-4 w-full rounded-xl bg-brand px-4 py-3 text-sm font-bold text-white hover:bg-blue-700"><span data-t="checkout">Оформить заказ</span> →</button>
+              </div>
+            </section>
+            <section class="rounded-2xl bg-blue-50 p-4">
+              <h3 class="font-bold" data-t="orderInfo">Информация о заказе</h3>
+              <div class="mt-4 flex gap-3"><span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-xl">◷</span><p class="text-xs leading-5 text-slate-600" data-t="info1">Выбранные блюда будут приготовлены к вашему времени.</p></div>
+              <div class="mt-4 flex gap-3"><span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-xl">✓</span><p class="text-xs leading-5 text-slate-600" data-t="info2">Готовность можно отслеживать в истории заказов.</p></div>
+            </section>
+            <section class="overflow-hidden rounded-2xl border border-blue-100 bg-white p-4 text-center">
+              <div class="text-5xl">👨‍🍳</div><p class="mt-2 text-lg font-black" data-t="bonAppetit">Приятного аппетита!</p><p class="mt-1 text-xs text-slate-500" data-t="healthy">Питайся вкусно и учись с удовольствием 💙</p>
+            </section>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Checkout modal -->
+<div id="checkoutModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/40 p-4">
+  <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+    <div class="flex items-center justify-between"><h2 class="text-xl font-black" data-t="checkoutTitle">Оформление заказа</h2><button onclick="closeCheckout()" class="rounded-lg px-3 py-1 text-xl hover:bg-slate-100">×</button></div>
+    <p class="mt-2 text-sm text-slate-500" data-t="checkoutDesc">Укажите имя и время, когда заберёте обед.</p>
+    <label class="mt-5 block text-sm font-semibold" for="studentName" data-t="name">Имя</label><input id="studentName" maxlength="50" placeholder="Например, Алина" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-blue-400">
+    <label class="mt-4 block text-sm font-semibold" for="studentClass" data-t="class">Класс</label><select id="studentClass" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3"><option>5-A</option><option>6-A</option><option>7-A</option><option>8-A</option><option selected>9-A</option><option>10-A</option><option>11-A</option></select>
+    <label class="mt-4 block text-sm font-semibold" for="pickup" data-t="pickup">Время получения</label><select id="pickup" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3"><option>10:00</option><option selected>11:00</option><option>12:00</option><option>13:00</option></select>
+    <button onclick="checkout()" class="mt-5 w-full rounded-xl bg-brand px-4 py-3 font-bold text-white" data-t="confirm">Подтвердить заказ</button>
+  </div>
+</div>
+<div id="toastHost" class="fixed bottom-4 left-4 right-4 z-[60] flex flex-col items-center gap-2 pointer-events-none"></div>
+
+<script>
+const words={
+ru:{subtitle:"Школьная столовая",home:"Главная",menu:"Меню",myOrders:"Мои заказы",history:"История заказов",cafeteria:"Кабинет столовой",stats:"Статистика",grade:"класс",sidebarTitle:"Вкусная еда — для успешной учёбы!",sidebarText:"Здоровое питание — залог энергии и хорошего настроения.",search:"Поиск блюд...",hero:"Вкусный обед —<br>всегда рядом!",heroText:"Выбирай любимые блюда, заказывай заранее и экономь время в столовой.",today:"Сегодня",hours:"Время работы столовой",todayMenu:"Меню на сегодня",menuSub:"Свежие блюда на каждый день",october:"октября",all:"Все",food:"Основные блюда",soups:"Супы",sides:"Гарниры",salads:"Салаты",drinks:"Напитки",desserts:"Десерты",demoNote:"Демонстрационные цены. Фото загружаются из интернета.",myOrder:"Мой заказ",total:"Общая сумма",checkout:"Оформить заказ",orderInfo:"Информация о заказе",info1:"Выбранные блюда будут приготовлены к вашему времени.",info2:"Готовность можно отслеживать в истории заказов.",bonAppetit:"Приятного аппетита!",healthy:"Питайся вкусно и учись с удовольствием 💙",ordersDesc:"Следите за готовностью заказа.",historyDesc:"Все оформленные заказы в этом браузере.",adminDesc:"Управляйте заказами и готовностью.",statsDesc:"Спрос на блюда по оформленным заказам.",checkoutTitle:"Оформление заказа",checkoutDesc:"Укажите имя и время, когда заберёте обед.",name:"Имя",class:"Класс",pickup:"Время получения",confirm:"Подтвердить заказ",add:"Добавить",popular:"Популярное",remove:"Удалить",emptyCart:"Корзина пуста",emptyCartText:"Добавьте блюда из меню.",emptyOrders:"Заказов пока нет",emptyOrdersText:"Оформленные заказы появятся здесь.",new:"Новый",ready:"Готов",done:"Выдан",markReady:"Отметить готовым",markDone:"Отметить выданным",cancel:"Отменить",order:"Заказ",portions:"порц.",orders:"Заказов",revenue:"Сумма",items:"Порций",pending:"Ожидают",noStats:"Пока нет данных. Оформите заказ, чтобы увидеть статистику.",orderSuccess:"Заказ оформлен!",needName:"Введите имя.",needFood:"Сначала добавьте блюда в корзину.",cancelled:"Заказ отменён",notifications:"Уведомлений пока нет",units:"сум",noResults:"Ничего не найдено",confirmCancel:"Отменить этот заказ?",demo:"Демо-данные: заказы сохраняются только в этом браузере."},
+uz:{subtitle:"Maktab oshxonasi",home:"Bosh sahifa",menu:"Menyu",myOrders:"Buyurtmalarim",history:"Buyurtmalar tarixi",cafeteria:"Oshxona kabineti",stats:"Statistika",grade:"sinf",sidebarTitle:"Mazali taom — muvaffaqiyatli ta’lim uchun!",sidebarText:"Sog‘lom ovqatlanish — energiya va yaxshi kayfiyat garovi.",search:"Taomlarni qidirish...",hero:"Mazali tushlik —<br>doimo yoningizda!",heroText:"Sevimli taomlaringizni tanlang, oldindan buyurtma bering va oshxonada vaqtni tejang.",today:"Bugun",hours:"Oshxona ish vaqti",todayMenu:"Bugungi menyu",menuSub:"Har kun uchun yangi taomlar",october:"oktabr",all:"Barchasi",food:"Asosiy taomlar",soups:"Sho‘rvalar",sides:"Garnirlar",salads:"Salatlar",drinks:"Ichimliklar",desserts:"Shirinliklar",demoNote:"Namoyish narxlari. Rasmlar internetdan yuklanadi.",myOrder:"Buyurtmam",total:"Umumiy summa",checkout:"Buyurtma berish",orderInfo:"Buyurtma haqida",info1:"Tanlangan taomlar siz belgilagan vaqtda tayyorlanadi.",info2:"Tayyorligini buyurtmalar tarixidan kuzatishingiz mumkin.",bonAppetit:"Yoqimli ishtaha!",healthy:"Mazali ovqatlaning va zavq bilan o‘qing 💙",ordersDesc:"Buyurtma tayyorligini kuzating.",historyDesc:"Ushbu brauzerda rasmiylashtirilgan buyurtmalar.",adminDesc:"Buyurtmalar va tayyorlikni boshqaring.",statsDesc:"Buyurtmalar bo‘yicha taomlarga talab.",checkoutTitle:"Buyurtmani rasmiylashtirish",checkoutDesc:"Ismingiz va olib ketish vaqtini kiriting.",name:"Ism",class:"Sinf",pickup:"Olib ketish vaqti",confirm:"Buyurtmani tasdiqlash",add:"Qo‘shish",popular:"Ommabop",remove:"O‘chirish",emptyCart:"Savat bo‘sh",emptyCartText:"Menyudan taom qo‘shing.",emptyOrders:"Hozircha buyurtmalar yo‘q",emptyOrdersText:"Rasmiylashtirilgan buyurtmalar shu yerda ko‘rinadi.",new:"Yangi",ready:"Tayyor",done:"Topshirildi",markReady:"Tayyor deb belgilash",markDone:"Topshirildi deb belgilash",cancel:"Bekor qilish",order:"Buyurtma",portions:"pors.",orders:"Buyurtmalar",revenue:"Summa",items:"Porsiyalar",pending:"Kutilmoqda",noStats:"Hozircha ma’lumot yo‘q. Statistika uchun buyurtma bering.",orderSuccess:"Buyurtma qabul qilindi!",needName:"Ismingizni kiriting.",needFood:"Avval savatga taom qo‘shing.",cancelled:"Buyurtma bekor qilindi",notifications:"Hozircha bildirishnomalar yo‘q",units:"so‘m",noResults:"Hech narsa topilmadi",confirmCancel:"Bu buyurtma bekor qilinsinmi?",demo:"Demo: buyurtmalar faqat shu brauzerda saqlanadi."}
+};
+const dishes=[
+{id:1,cat:"food",name:{ru:"Котлета с гречкой",uz:"Grechka bilan kotlet"},desc:{ru:"Домашняя котлета и гречка",uz:"Uy kotleti va grechka"},price:12000,img:"photo-1547592180-85f173990554",popular:true},
+{id:2,cat:"food",name:{ru:"Паста болоньезе",uz:"Bolonez makaron"},desc:{ru:"Паста с мясным соусом",uz:"Go‘shtli sous bilan makaron"},price:14000,img:"photo-1473093295043-cdd812d0e601",popular:true},
+{id:3,cat:"food",name:{ru:"Плов",uz:"Osh"},desc:{ru:"Рис, морковь и нежное мясо",uz:"Guruch, sabzi va yumshoq go‘sht"},price:15000,img:"photo-1512058564366-18510be2db19"},
+{id:4,cat:"food",name:{ru:"Гуляш с говядиной",uz:"Mol go‘shtli gulyash"},desc:{ru:"Тушёная говядина с соусом",uz:"Sousli dimlangan mol go‘shti"},price:16000,img:"photo-1544025162-d76694265947"},
+{id:5,cat:"soup",name:{ru:"Суп овощной",uz:"Sabzavotli sho‘rva"},desc:{ru:"Лёгкий суп с овощами",uz:"Sabzavotli yengil sho‘rva"},price:8000,img:"photo-1547592180-85f173990554"},
+{id:6,cat:"food",name:{ru:"Куриные наггетсы",uz:"Tovuq naggetslar"},desc:{ru:"Хрустящие кусочки курицы",uz:"Qarsildoq tovuq bo‘laklari"},price:9000,img:"photo-1562967914-608f82629710"},
+{id:7,cat:"side",name:{ru:"Картофель фри",uz:"Kartoshka fri"},desc:{ru:"Золотистый картофель",uz:"Oltinrang kartoshka"},price:6000,img:"photo-1573080496219-bb080dd4f877"},
+{id:8,cat:"side",name:{ru:"Картофельное пюре",uz:"Kartoshka pyuresi"},desc:{ru:"Нежное сливочное пюре",uz:"Yumshoq qaymoqli pyure"},price:5000,img:"photo-1476224203421-9ac39bcb3327"},
+{id:9,cat:"salad",name:{ru:"Салат «Цезарь»",uz:"Sezar salati"},desc:{ru:"Курица, салат и соус",uz:"Tovuq, salat va sous"},price:10000,img:"photo-1546793665-c74683a6f6a9"},
+{id:10,cat:"salad",name:{ru:"Салат овощной",uz:"Sabzavotli salat"},desc:{ru:"Свежие сезонные овощи",uz:"Yangi mavsumiy sabzavotlar"},price:7000,img:"photo-1512621776951-a57141f2eefd"},
+{id:11,cat:"drink",name:{ru:"Компот из сухофруктов",uz:"Quritilgan meva kompoti"},desc:{ru:"Домашний фруктовый напиток",uz:"Uyda tayyorlangan mevali ichimlik"},price:5000,img:"photo-1544787219-7f47ccb76574"},
+{id:12,cat:"drink",name:{ru:"Чай чёрный",uz:"Qora choy"},desc:{ru:"Свежезаваренный чай",uz:"Yangi damlangan choy"},price:3000,img:"photo-1544787219-7f47ccb76574"},
+{id:13,cat:"drink",name:{ru:"Сок натуральный",uz:"Tabiiy sharbat"},desc:{ru:"Фруктовый сок",uz:"Meva sharbati"},price:6000,img:"photo-1600271886742-f049cd451bba"},
+{id:14,cat:"drink",name:{ru:"Йогурт питьевой",uz:"Ichimlik yogurt"},desc:{ru:"Нежный ягодный йогурт",uz:"Mayin rezavorli yogurt"},price:4000,img:"photo-1488477181946-6428a0291777"},
+{id:15,cat:"drink",name:{ru:"Вода без газа",uz:"Gazsiz suv"},desc:{ru:"Питьевая вода 500 мл",uz:"500 ml ichimlik suvi"},price:2000,img:"photo-1523362628745-0c100150b5f3"},
+{id:16,cat:"drink",name:{ru:"Лимонад",uz:"Limonad"},desc:{ru:"Освежающий лимонный напиток",uz:"Salqin limonli ichimlik"},price:5000,img:"photo-1544787219-7f47ccb76574"},
+{id:17,cat:"drink",name:{ru:"Молоко",uz:"Sut"},desc:{ru:"Молоко 200 мл",uz:"200 ml sut"},price:4000,img:"photo-1563636619-e9143da7973b"},
+{id:18,cat:"drink",name:{ru:"Какао",uz:"Kakao"},desc:{ru:"Тёплый какао-напиток",uz:"Iliq kakao ichimligi"},price:5000,img:"photo-1517701604599-bb29b565090c"},
+{id:19,cat:"dessert",name:{ru:"Булочка",uz:"Bulochka"},desc:{ru:"Свежая мягкая выпечка",uz:"Yangi yumshoq pishiriq"},price:5000,img:"photo-1509440159596-0249088772ff"},
+{id:20,cat:"dessert",name:{ru:"Мороженое",uz:"Muzqaymoq"},desc:{ru:"Ванильное мороженое",uz:"Vanilli muzqaymoq"},price:7000,img:"photo-1497034825429-c343d7c6a68f"},
+{id:21,cat:"dessert",name:{ru:"Фруктовый салат",uz:"Mevali salat"},desc:{ru:"Сезонные фрукты",uz:"Mavsumiy mevalar"},price:8000,img:"photo-1490474418585-ba9bad8fd0ea"},
+{id:22,cat:"dessert",name:{ru:"Печенье",uz:"Pechenye"},desc:{ru:"Домашнее печенье",uz:"Uy pechenyesi"},price:3000,img:"photo-1499636136210-6f4ee915583e"},
+{id:23,cat:"drink",name:{ru:"Айран",uz:"Ayron"},desc:{ru:"Освежающий кисломолочный напиток",uz:"Salqin qatiqli ichimlik"},price:4000,img:"photo-1488477181946-6428a0291777"},
+{id:24,cat:"drink",name:{ru:"Клубничный смузи",uz:"Qulupnay smuzisi"},desc:{ru:"Фруктово-ягодный напиток",uz:"Meva va rezavorli ichimlik"},price:8000,img:"photo-1513558161293-c tea"}
+];
+// Use known, valid Unsplash photo IDs. Each menu item gets a real food photograph.
+const photoMap={
+1:"photo-1547592180-85f173990554",2:"photo-1473093295043-cdd812d0e601",3:"photo-1512058564366-18510be2db19",4:"photo-1544025162-d76694265947",
+5:"photo-1547592180-85f173990554",6:"photo-1562967914-608f82629710",7:"photo-1573080496219-bb080dd4f877",8:"photo-1476224203421-9ac39bcb3327",
+9:"photo-1546793665-c74683a6f6a9",10:"photo-1512621776951-a57141f2eefd",11:"photo-1544787219-7f47ccb76574",12:"photo-1544787219-7f47ccb76574",
+13:"photo-1600271886742-f049cd451bba",14:"photo-1488477181946-6428a0291777",15:"photo-1523362628745-0c100150b5f3",16:"photo-1544787219-7f47ccb76574",
+17:"photo-1563636619-e9143da7973b",18:"photo-1517701604599-bb29b565090c",19:"photo-1509440159596-0249088772ff",20:"photo-150144 re",
+21:"photo-1490474418585-ba9bad8fd0ea",22:"photo-1499636136210-6f4ee915583e",23:"photo-1488477181946-6428a0291777",24:"photo-1544787219-7f47ccb76574"
+};
+// Correct a few image IDs to avoid malformed URLs.
+photoMap[11]="photo-1544787219-7f47ccb76574"; photoMap[16]="photo-1544787219-7f47ccb76574"; photoMap[20]="photo-1497034825429-c343d7c6a68f";
+let lang=localStorage.getItem("tanaffus_lang")||"ru",category="all";
+let data={cart:{},orders:[],next:1001};
+try{const s=JSON.parse(localStorage.getItem("tanaffus_app"));if(s&&s.cart&&Array.isArray(s.orders))data=s;}catch(e){}
+function tr(k){return words[lang][k]||words.ru[k]||k}
+function save(){localStorage.setItem("tanaffus_app",JSON.stringify(data))}
+function money(n){return new Intl.NumberFormat(lang==="ru"?"ru-RU":"uz-UZ").format(n)+" "+tr("units")}
+function imgUrl(id){return "https://images.unsplash.com/"+(photoMap[id]||"photo-1547592180-85f173990554")+"?auto=format&fit=crop&w=700&q=80"}
+function setLang(l){lang=l;localStorage.setItem("tanaffus_lang",l);document.documentElement.lang=l;document.getElementById("ruBtn").className=l==="ru"?"rounded-full bg-brand px-4 py-2 text-white":"rounded-full px-4 py-2 text-slate-600";document.getElementById("uzBtn").className=l==="uz"?"rounded-full bg-brand px-4 py-2 text-white":"rounded-full px-4 py-2 text-slate-600";document.querySelectorAll("[data-t]").forEach(el=>{let k=el.dataset.t;if(words[l][k])el.innerHTML=words[l][k]});document.querySelectorAll("[data-ph]").forEach(el=>el.placeholder=tr(el.dataset.ph));renderAll()}
+function toggleMobile(){document.getElementById("mobileNav").classList.toggle("hidden")}
+function showPage(page){document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));document.getElementById("page-"+page).classList.remove("hidden");document.querySelectorAll(".side-link").forEach(b=>{let active=b.dataset.page===page;b.classList.toggle("nav-active",active);b.classList.toggle("text-slate-600",!active)});if(page==="orders")renderOrders();if(page==="history")renderHistory();if(page==="admin")renderAdmin();if(page==="stats")renderStats();document.getElementById("mobileNav").classList.add("hidden");window.scrollTo({top:0,behavior:"smooth"})}
+function setCategory(c){category=c;document.querySelectorAll(".filter-btn").forEach(b=>{let a=b.dataset.cat===c;b.className="filter-btn whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-semibold "+(a?"bg-brand text-white":"border border-blue-100 bg-white text-ink")});renderMenu()}
+function renderMenu(){let q=(document.getElementById("search")?.value||"").toLowerCase().trim();let arr=dishes.filter(d=>(category==="all"||d.cat===category)&&(!q||(d.name[lang]+" "+d.desc[lang]).toLowerCase().includes(q)));document.getElementById("menuGrid").innerHTML=arr.length?arr.map(d=>`<article class="food-card overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-panel"><div class="relative h-28 overflow-hidden bg-blue-50 sm:h-32"><img class="food-img h-full w-full object-cover" src="${imgUrl(d.id)}" alt="${d.name[lang]}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=700&q=80'">${d.popular?`<span class="absolute left-2 top-2 rounded-full bg-white/95 px-2 py-1 text-[10px] font-bold text-amber-700">⭐ ${tr("popular")}</span>`:""}</div><div class="p-3"><h3 class="min-h-10 text-sm font-bold leading-5">${d.name[lang]}</h3><p class="mt-1 text-xs text-slate-400">${d.cat==="drink"?"250 ml":"250 g"}</p><p class="mt-2 text-sm font-extrabold">${money(d.price)}</p><div class="mt-3 flex items-center gap-2"><div class="flex items-center rounded-lg border border-slate-200"><button onclick="qty(${d.id},-1)" class="px-2 py-1.5 text-slate-500">−</button><span class="min-w-5 text-center text-xs font-bold">${data.cart[d.id]||0}</span><button onclick="qty(${d.id},1)" class="px-2 py-1.5 text-slate-500">+</button></div><button onclick="add(${d.id})" class="flex-1 rounded-lg bg-brand px-2 py-2 text-xs font-bold text-white hover:bg-blue-700">${tr("add")}</button></div></div></article>`).join(""):`<div class="col-span-full rounded-xl bg-white p-8 text-center text-slate-500">${tr("noResults")}</div>`}
+function qty(id,delta){let n=(data.cart[id]||0)+delta;if(n<=0)delete data.cart[id];else data.cart[id]=Math.min(30,n);save();renderAll()}
+function add(id){qty(id,1);toast(tr("add"))}
+function lines(){return Object.entries(data.cart).map(([id,n])=>({d:dishes.find(x=>x.id===+id),n})).filter(x=>x.d)}
+function total(){return lines().reduce((s,x)=>s+x.d.price*x.n,0)}
+function renderCart(){let ls=lines();document.getElementById("cartCount").textContent=Object.values(data.cart).reduce((a,b)=>a+b,0);document.getElementById("cartTotal").textContent=money(total());document.getElementById("cartPanel").innerHTML=ls.length?ls.map(({d,n})=>`<div class="flex gap-3"><img src="${imgUrl(d.id)}" class="h-14 w-14 rounded-lg object-cover" alt=""><div class="min-w-0 flex-1"><p class="text-xs font-bold leading-4">${d.name[lang]}</p><p class="mt-1 text-xs text-slate-500">${money(d.price)}</p><div class="mt-1 flex items-center gap-3 text-xs"><button onclick="qty(${d.id},-1)">−</button><b>${n}</b><button onclick="qty(${d.id},1)">+</button><button onclick="qty(${d.id},-${n})" class="ml-auto text-slate-400">⌫</button></div></div></div>`).join(""):`<div class="py-7 text-center"><div class="text-3xl">🛒</div><p class="mt-2 text-sm font-bold">${tr("emptyCart")}</p><p class="mt-1 text-xs text-slate-400">${tr("emptyCartText")}</p></div>`}
+function openCheckout(){if(!lines().length){toast(tr("needFood"));return}document.getElementById("checkoutModal").classList.remove("hidden");document.getElementById("checkoutModal").classList.add("flex");document.getElementById("studentName").focus()}
+function closeCheckout(){document.getElementById("checkoutModal").classList.add("hidden");document.getElementById("checkoutModal").classList.remove("flex")}
+function checkout(){let name=document.getElementById("studentName").value.trim();if(!name){toast(tr("needName"));document.getElementById("studentName").focus();return}let order={id:data.next++,name:name.slice(0,50),className:document.getElementById("studentClass").value,pickup:document.getElementById("pickup").value,items:lines().map(x=>({id:x.d.id,n:x.n})),total:total(),status:"new",date:new Date().toISOString()};data.orders.unshift(order);data.cart={};save();closeCheckout();renderAll();showPage("orders");toast(tr("orderSuccess"))}
+function orderText(o){return o.items.map(i=>{let d=dishes.find(x=>x.id===i.id);return d?`${d.name[lang]} × ${i.n}`:""}).filter(Boolean).join(", ")}
+function statusName(s){return tr(s)}
+function orderCard(o,admin=false){return `<article class="rounded-xl border border-blue-100 bg-white p-4 shadow-sm"><div class="flex flex-wrap items-start justify-between gap-2"><div><div class="font-extrabold">${tr("order")} #${o.id} ${admin?"· "+o.name:""}</div><p class="mt-1 text-xs text-slate-500">${admin?o.className+" · ":""}${o.pickup} · ${new Date(o.date).toLocaleString(lang==="ru"?"ru-RU":"uz-UZ",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}</p></div><span class="rounded-full px-2.5 py-1 text-xs font-bold ${o.status==="new"?"bg-amber-100 text-amber-800":o.status==="ready"?"bg-blue-100 text-blue-800":"bg-emerald-100 text-emerald-800"}">${statusName(o.status)}</span></div><p class="mt-3 text-sm text-slate-600">${orderText(o)}</p><div class="mt-3 flex flex-wrap items-center justify-between gap-2"><b class="text-sm">${money(o.total)}</b><div class="flex gap-2">${!admin&&o.status==="new"?`<button onclick="cancelOrder(${o.id})" class="rounded-lg border border-rose-200 px-3 py-2 text-xs font-bold text-rose-600">${tr("cancel")}</button>`:""}${admin&&o.status==="new"?`<button onclick="changeStatus(${o.id},'ready')" class="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700">${tr("markReady")}</button>`:""}${admin&&o.status==="ready"?`<button onclick="changeStatus(${o.id},'done')" class="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">${tr("markDone")}</button>`:""}</div></div></article>`}
+function renderOrders(){let el=document.getElementById("ordersList");el.innerHTML=data.orders.length?data.orders.map(o=>orderCard(o)).join():`<div class="rounded-xl bg-white p-10 text-center"><div class="text-4xl">🧾</div><b class="mt-3 block">${tr("emptyOrders")}</b><p class="mt-1 text-sm text-slate-500">${tr("emptyOrdersText")}</p></div>`}
+function renderHistory(){document.getElementById("historyList").innerHTML=data.orders.length?data.orders.map(o=>orderCard(o)).join():`<div class="rounded-xl bg-white p-8 text-slate-500">${tr("emptyOrdersText")}</div>`}
+function renderAdmin(){let count=data.orders.length,portions=data.orders.reduce((s,o)=>s+o.items.reduce((a,i)=>a+i.n,0),0),sum=data.orders.reduce((s,o)=>s+o.total,0),pending=data.orders.filter(o=>o.status!=="done").length;let stats=[[tr("orders"),count,"📦"],[tr("items"),portions,"🍽️"],[tr("revenue"),money(sum),"💳"],[tr("pending"),pending,"⏳"]];document.getElementById("adminStats").innerHTML=stats.map(x=>`<div class="rounded-xl bg-white p-4 shadow-sm"><span class="text-xl">${x[2]}</span><p class="mt-2 text-xs text-slate-500">${x[0]}</p><b class="mt-1 block break-words text-lg">${x[1]}</b></div>`).join("");document.getElementById("adminList").innerHTML=data.orders.length?data.orders.map(o=>orderCard(o,true)).join():`<div class="rounded-xl bg-white p-8 text-sm text-slate-500">${tr("emptyOrdersText")}</div>`}
+function renderStats(){let counts=dishes.map(d=>({d,n:data.orders.reduce((s,o)=>s+o.items.filter(i=>i.id===d.id).reduce((a,i)=>a+i.n,0),0)})).filter(x=>x.n).sort((a,b)=>b.n-a.n),max=Math.max(1,...counts.map(x=>x.n));document.getElementById("statsContent").innerHTML=counts.length?counts.map(x=>`<div class="mb-5"><div class="mb-2 flex justify-between text-sm"><b>${x.d.name[lang]}</b><span>${x.n} ${tr("portions")}</span></div><div class="h-3 rounded-full bg-slate-100"><div class="h-3 rounded-full bg-brand" style="width:${x.n/max*100}%"></div></div></div>`).join(""):`<p class="text-sm text-slate-500">${tr("noStats")}</p>`}
+function cancelOrder(id){if(!confirm(tr("confirmCancel")))return;data.orders=data.orders.filter(o=>o.id!==id);save();renderAll();toast(tr("cancelled"))}
+function changeStatus(id,s){let o=data.orders.find(x=>x.id===id);if(o)o.status=s;save();renderAll();toast(tr(s))}
+function renderAll(){renderMenu();renderCart();renderOrders();renderHistory();renderAdmin();renderStats();document.getElementById("orderCount").textContent=data.orders.length}
+function toast(msg){let el=document.createElement("div");el.className="toast rounded-xl bg-ink px-4 py-3 text-sm font-semibold text-white shadow-lg";el.textContent=msg;document.getElementById("toastHost").appendChild(el);setTimeout(()=>el.remove(),2600)}
+document.getElementById("search").placeholder=tr("search");
+setLang(lang);
+</script>
+</body>
+</html>
